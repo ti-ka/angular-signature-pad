@@ -9,11 +9,15 @@ import * as SignaturePad from 'signature_pad/dist/signature_pad';
 export class SignaturePadComponent implements OnInit {
     @ViewChild('canvas') canvas;
 
-    @Input() dataUrl: string;
+    @Input() base64: string;
+    @Output() base64Change = new EventEmitter<string>();
+
+    @Input() blob: Blob;
+    @Output() blobChange = new EventEmitter<Blob>();
+
     @Input() dataPoints: string;
     @Input() editable = true;
     @Input() showClearButton = true;
-    @Input() output: 'blob' | 'base64' = 'blob';
 
     private pad: SignaturePad;
     @Output() signed = new EventEmitter<string | Blob>();
@@ -30,8 +34,8 @@ export class SignaturePadComponent implements OnInit {
     initPad() {
         console.log(this.canvas.nativeElement);
         this.pad = new SignaturePad.default(this.canvas.nativeElement);
-        if (this.dataUrl) {
-            this.pad.fromDataURL(this.dataUrl);
+        if (this.base64) {
+            this.pad.fromDataURL(this.base64);
         }
         if (this.dataPoints) {
             this.pad.fromData(this.dataPoints);
@@ -46,20 +50,13 @@ export class SignaturePadComponent implements OnInit {
     }
 
     emitCanvas() {
+        const base64String = this.canvas.nativeElement.toDataURL();
+        this.base64Change.emit(base64String);
 
-        switch (this.output) {
-
-            case 'base64':
-                const str = this.canvas.nativeElement.toDataURL();
-                this.signed.emit(str);
-                break;
-
-            default:
-                this.canvas.nativeElement.toBlob((blob) => {
-                    this.signed.emit(blob);
-                });
-                break;
-        }
+        this.canvas.nativeElement.toBlob((blob) => {
+            this.blobChange.emit(blob);
+            this.signed.emit(blob);
+        });
 
     }
 

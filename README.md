@@ -5,16 +5,23 @@ Installation:
 npm install @ng-plus/signature-pad --save
 ```
 
-Usage:
+Usage (Blob):
 ```html
-  <ng-signature-pad #pad
-        [output]="'blob'" <!-- blob (default) or base64 (optional)-->
-        (signed)="signed($event)"></ng-signature-pad>
+<ng-signature-pad [(blob)]="blob"></ng-signature-pad>
 ```
 
 JavaScript:
-```javascript
-    signed(blob) {
-        // Do something with blob here.
-    }
+```typescript
+blob: Blob;
+
+someButtonAction() {
+    // Do something with the blob.
+}
+```
+
+#
+Or use a base64 string:
+```html
+<ng-signature-pad [(base64)]="base64"></ng-signature-pad>
+<img [src]="base64" /> 
 ```
