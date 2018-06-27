@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from "@angular/core";
 import * as SignaturePad from 'signature_pad/dist/signature_pad';
 
 @Component({
@@ -6,71 +6,162 @@ import * as SignaturePad from 'signature_pad/dist/signature_pad';
     templateUrl: 'signature-pad.component.html',
     styleUrls: ['signature-pad.component.scss']
 })
-export class SignaturePadComponent implements OnInit {
-    @ViewChild('canvas') canvas;
+export class SignaturePadComponent implements OnInit, AfterViewInit {
 
-    @Input() base64: string;
-    @Output() base64Change = new EventEmitter<string>();
+    private signaturePad: SignaturePad;
+    @ViewChild('canvas', {read: ElementRef}) canvasRef: ElementRef;
 
-    @Input() blob: Blob;
-    @Output() blobChange = new EventEmitter<Blob>();
+    @Input() points: any;
+    @Output() pointsChange = new EventEmitter<any>();
 
-    @Input() dataPoints: string;
     @Input() editable = true;
-    @Input() showClearButton = true;
+    @Input() emitOnDragEnd = false;
 
-    private pad: SignaturePad;
-    @Output() signed = new EventEmitter<string | Blob>();
+    @Input() penColor = 'rgba(0,0,0,1)'; // Solid Black
+    @Input() backgroundColor = 'rgba(0,0,0,0)'; // Transparent Black
+
+    @Input() showDoneButton = true;
+    @Input() doneButtonText = 'Done';
+    @Input() doneButtonClass = 'btn btn-primary';
+    @Input() showClearButton = true;
+    @Input() clearButtonText = 'Clear';
+    @Input() clearButtonClass = 'btn btn-default';
+
+    @Input() format: 'blob' | 'base64' | 'json' = 'blob';
+
+    @Input() height = 150;
+    @Input() width = 600;
+
+    @Output() done = new EventEmitter();
+    @Output() cleared = new EventEmitter();
+
+    @Input() responsive = true;
 
     constructor() {
     }
 
     ngOnInit() {
-        this.initPad();
-        window.addEventListener('resize', this.resize);
-        this.resize();
+    }
+
+    ngAfterViewInit() {
+        // Resize Canvas to full screen:
+        if (this.responsive) {
+            window.addEventListener('resize', () => {
+                this.resizeCanvas();
+            });
+            this.resizeCanvas();
+            this.initPad();
+        }
     }
 
     initPad() {
-        console.log(this.canvas.nativeElement);
-        this.pad = new SignaturePad.default(this.canvas.nativeElement);
-        if (this.base64) {
-            this.pad.fromDataURL(this.base64);
-        }
-        if (this.dataPoints) {
-            this.pad.fromData(this.dataPoints);
-        }
-        if (this.editable) {
-            this.pad.on();
-        } else {
-            this.pad.off();
-        }
-
-        this.pad.onEnd = () => this.emitCanvas();
-    }
-
-    emitCanvas() {
-        const base64String = this.canvas.nativeElement.toDataURL();
-        this.base64Change.emit(base64String);
-
-        this.canvas.nativeElement.toBlob((blob) => {
-            this.blobChange.emit(blob);
-            this.signed.emit(blob);
+        this.signaturePad = new SignaturePad(this.canvasRef.nativeElement, {
+            penColor: this.penColor,
+            backgroundColor: this.backgroundColor
         });
+        this.signaturePad.penColor = this.penColor;
+
+        if (this.editable) {
+            this.signaturePad.on();
+        } else {
+            this.signaturePad.off();
+        }
+
+        this.signaturePad.onEnd = () => {
+            this.emitPoints();
+            if (this.emitOnDragEnd) {
+                this.emitBlob();
+            }
+        };
+
+        this.applyPoints();
+        if (this.emitOnDragEnd) {
+            this.emitBlob();
+        }
+    }
+
+    clearPad() {
+        this.signaturePad.clear();
+        this.cleared.emit();
+        this.emitPoints();
+        if (this.emitOnDragEnd) {
+            this.emitBlob();
+        }
+    }
+
+    applyPoints() {
+
+        if (!this.points || !this.signaturePad) { return; }
+
+        this.signaturePad.clear();
+
+        const multiplier = this.canvasRef.nativeElement.offsetWidth / this.width;
+
+        const points = JSON.parse(JSON.stringify(this.points));
+        points.forEach(group => {
+            group.forEach(pt => {
+                pt.x = pt.x * multiplier;
+                pt.y = pt.y * multiplier;
+            });
+        });
+        this.signaturePad.fromData(points);
+    }
+
+    emitPoints() {
+        const multiplier = this.canvasRef.nativeElement.offsetWidth / this.width;
+        const points = JSON.parse(JSON.stringify(this.signaturePad.toData()));
+        points.forEach(group => {
+            group.forEach(pt => {
+                pt.x = pt.x / multiplier;
+                pt.y = pt.y / multiplier;
+            });
+        });
+        this.pointsChange.emit(points);
+    }
+
+    emitPointsAndBlob() {
+        this.emitPoints();
+        this.emitBlob();
+    }
+
+    emitBlob() {
+
+        switch (this.format) {
+
+            case 'base64':
+                this.done.emit(this.signaturePad.toDataURL());
+                break;
+
+            case 'json':
+                this.done.emit(this.signaturePad.toData());
+                break;
+
+            default:
+                this.canvasRef.nativeElement.toBlob((blob) => {
+                    this.done.emit(blob);
+                });
+                break;
+        }
 
     }
 
-    clear() {
-        this.pad.clear();
-        this.emitCanvas();
-    }
 
-    private resize() {
-        const canvas = this.canvas.nativeElement;
-        const ratio =  Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext('2d').scale(ratio, ratio);
+    resizeCanvas() {
+
+        const canvas = this.canvasRef.nativeElement;
+        if (!canvas) { return; }
+
+        const pad = canvas.closest('.signature-pad') as HTMLElement;
+        if (!pad) { return; }
+
+        const w = pad.offsetWidth;
+        const h = pad.offsetWidth / (this.width / this.height);
+
+        canvas.setAttribute('width', `${w}`);
+        canvas.setAttribute('height', `${h}`);
+
+        this.applyPoints();
+
     }
 
 }

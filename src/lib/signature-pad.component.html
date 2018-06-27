@@ -1,6 +1,10 @@
-<div id="wrapper">
-    <canvas id="canvas" #canvas></canvas>
-    <div class="clear-signature" *ngIf="showClearButton" (click)="clear()">
-        <i class="fal fa-times-circle"></i>
+<div class="signature-pad">
+    <canvas
+        [width]="width"
+        [height]="height"
+        #canvas></canvas>
+    <div class="buttons">
+        <div [class]="doneButtonClass" *ngIf="showDoneButton" (click)="emitPointsAndBlob()">{{ doneButtonText }}</div>
+        <div [class]="clearButtonClass" *ngIf="showClearButton" (click)="clearPad()">{{ clearButtonText }}</div>
     </div>
 </div>
