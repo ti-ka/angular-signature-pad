@@ -17,8 +17,8 @@ export class SignaturePadComponent implements OnInit, AfterViewInit {
     @Input() editable = true;
     @Input() emitOnDragEnd = false;
 
-    @Input() penColor = 'rgba(0,0,0,1)'; // Solid Black
-    @Input() backgroundColor = 'rgba(0,0,0,0)'; // Transparent Black
+    @Input() penColor = 'black';
+    @Input() backgroundColor = 'transparent';
 
     @Input() showDoneButton = true;
     @Input() doneButtonText = 'Done';
