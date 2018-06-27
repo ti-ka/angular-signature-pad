@@ -4,7 +4,7 @@
         [height]="height"
         #canvas></canvas>
     <div class="buttons">
-        <div [class]="doneButtonClass" *ngIf="showDoneButton" (click)="emitPointsAndBlob()">{{ doneButtonText }}</div>
-        <div [class]="clearButtonClass" *ngIf="showClearButton" (click)="clearPad()">{{ clearButtonText }}</div>
+        <button [class]="doneButtonClass" *ngIf="showDoneButton" (click)="emitPointsAndBlob()">{{ doneButtonText }}</button>
+        <button [class]="clearButtonClass" *ngIf="showClearButton" (click)="clearPad()">{{ clearButtonText }}</button>
     </div>
 </div>
