@@ -6,6 +6,6 @@
     "@angular/core": "^6.0.0-rc.0 || ^6.0.0"
   },
   "dependencies": {
-    "signature_pad": "^2.3.2"
+    "signature_pad": "3.0.0-beta.2"
   }
 }
