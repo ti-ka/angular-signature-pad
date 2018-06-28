@@ -99,7 +99,7 @@ export class SignaturePadComponent implements OnInit, AfterViewInit {
 
         const points = JSON.parse(JSON.stringify(this.points));
         points.forEach(group => {
-            group.forEach(pt => {
+            group.points.forEach(pt => {
                 pt.x = pt.x * multiplier;
                 pt.y = pt.y * multiplier;
             });
@@ -111,7 +111,7 @@ export class SignaturePadComponent implements OnInit, AfterViewInit {
         const multiplier = this.canvasRef.nativeElement.offsetWidth / this.width;
         const points = JSON.parse(JSON.stringify(this.signaturePad.toData()));
         points.forEach(group => {
-            group.forEach(pt => {
+            group.points.forEach(pt => {
                 pt.x = pt.x / multiplier;
                 pt.y = pt.y / multiplier;
             });
