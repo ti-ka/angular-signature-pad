@@ -11,7 +11,7 @@ export class SignaturePadComponent implements OnInit, AfterViewInit {
     private signaturePad: SignaturePad;
     @ViewChild('canvas', {read: ElementRef}) canvasRef: ElementRef;
 
-    @Input() points: any;
+    @Input() points: any[] = [];
     @Output() pointsChange = new EventEmitter<any>();
 
     @Input() editable = true;
@@ -50,8 +50,8 @@ export class SignaturePadComponent implements OnInit, AfterViewInit {
                 this.resizeCanvas();
             });
             this.resizeCanvas();
-            this.initPad();
         }
+        this.initPad();
     }
 
     initPad() {
