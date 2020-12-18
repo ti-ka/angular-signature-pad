@@ -1,11 +1,17 @@
 {
   "name": "@ng-plus/signature-pad",
-  "version": "0.0.5",
+  "version": "1.0.2",
+  "license": "MIT",
+  "author": {
+    "name": "Tika Pahadi",
+    "email": "tika.p@selu.edu"
+  },
+  "description": "An angular wrapper for signature_pad.",
   "peerDependencies": {
     "@angular/common": "^6.0.0-rc.0 || ^6.0.0",
     "@angular/core": "^6.0.0-rc.0 || ^6.0.0"
   },
   "dependencies": {
-    "signature_pad": "3.0.0-beta.2"
+    "signature_pad": "3.0.0-beta.4"
   }
 }
